@@ -8,19 +8,28 @@
 </head>
 <body>
   <main class="wrap">
-    <h1>yt-dlp</h1>
+    <header class="hero">
+      <h1>yt-dlp downloader</h1>
+      <p class="subtitle">Quickly send the current tab to your local helper.</p>
+    </header>
 
-    <label class="label" for="format">Format</label>
-    <select id="format">
-      <option value="mp4">Video (mp4)</option>
-      <option value="mp3">Audio (mp3)</option>
-      <option value="best">Best available</option>
-    </select>
+    <section class="panel">
+      <label class="label" for="format">Format</label>
+      <select id="format">
+        <option value="mp4">Video (mp4)</option>
+        <option value="mp3">Audio (mp3)</option>
+        <option value="best">Best available</option>
+      </select>
 
-    <label class="label" for="outputPath">Output folder</label>
-    <input id="outputPath" type="text" placeholder="C:\\Downloads\\yt-dlp" />
+      <label class="label" for="filename">Download filename</label>
+      <input id="filename" type="text" placeholder="Leave empty to use video title" />
+      <p class="hint">Optional. Extension is picked automatically from the selected format.</p>
 
-    <button id="downloadBtn">Download current tab</button>
+      <label class="label" for="outputPath">Output folder</label>
+      <input id="outputPath" type="text" placeholder="F:\\Videos\\New Reports" />
+
+      <button id="downloadBtn">Download current tab</button>
+    </section>
     <p id="status"></p>
   </main>
 
