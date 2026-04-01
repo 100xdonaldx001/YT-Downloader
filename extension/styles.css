@@ -1,22 +1,42 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
   margin: 0;
-  background: #f6f6f6;
+  background: linear-gradient(160deg, #0f172a, #1e293b);
+  color: #0f172a;
 }
 
 .wrap {
-  width: 320px;
-  padding: 16px;
+  width: 360px;
+  padding: 16px 16px 14px;
+}
+
+.hero {
+  margin-bottom: 12px;
 }
 
 h1 {
-  margin: 0 0 12px;
-  font-size: 20px;
+  margin: 0;
+  font-size: 22px;
+  color: #e2e8f0;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.panel {
+  padding: 14px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #d9e2f0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
 }
 
 .label {
   display: block;
-  margin: 10px 0 6px;
+  margin: 11px 0 6px;
   font-size: 13px;
   font-weight: 700;
 }
@@ -35,11 +55,26 @@ button {
   margin-top: 14px;
   cursor: pointer;
   font-weight: 700;
+  border: 0;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
+  transition: filter 150ms ease-in-out;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+.hint {
+  margin: 6px 0 4px;
+  font-size: 11px;
+  color: #475569;
 }
 
 #status {
   margin-top: 12px;
-  min-height: 40px;
+  min-height: 36px;
   font-size: 12px;
   white-space: pre-wrap;
+  color: #e2e8f0;
 }

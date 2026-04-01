@@ -4,10 +4,9 @@ const path = require("path");
 const { spawn } = require("child_process");
 
 const PORT = 3030;
-const APPDATA_DIR = process.env.LOCALAPPDATA || process.env.APPDATA || process.cwd();
-const BASE_DIR = path.join(APPDATA_DIR, "SimpleYtDlpHelper");
+const BASE_DIR = "C:\\Custom Chrome Extensions\\YT-Downloader";
 const YTDLP_PATH = path.join(BASE_DIR, "yt-dlp.exe");
-const DEFAULT_OUTPUT = "C:\\Downloads\\yt-dlp";
+const DEFAULT_OUTPUT = "F:\\Videos\\New Reports";
 
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
@@ -27,7 +26,21 @@ function ensureDir(dir) {
   }
 }
 
-function getYtDlpArgs(url, format, outputPath) {
+function sanitizeFilename(filename) {
+  return filename
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180);
+}
+
+function getOutputTemplate(finalOutputPath, filename) {
+  const safeFilename = filename ? sanitizeFilename(filename) : "";
+  const baseName = safeFilename.length > 0 ? safeFilename : "%(title)s";
+  return path.join(finalOutputPath, `${baseName}.%(ext)s`);
+}
+
+function getYtDlpArgs(url, format, outputPath, filename) {
   const finalOutputPath =
     outputPath && outputPath.trim().length > 0
       ? outputPath.trim()
@@ -35,14 +48,14 @@ function getYtDlpArgs(url, format, outputPath) {
 
   ensureDir(finalOutputPath);
 
-  const template = path.join(finalOutputPath, "%(title)s.%(ext)s");
+  const template = getOutputTemplate(finalOutputPath, filename);
 
-	const args = [
-	  "--compat-options", "filename",
-	  "--no-playlist",
-	  "--js-runtimes", getNodeRuntime(),
-	  "--remote-components", "ejs:github"
-	];
+  const args = [
+    "--compat-options", "filename",
+    "--no-playlist",
+    "--js-runtimes", getNodeRuntime(),
+    "--remote-components", "ejs:github"
+  ];
 
   if (format === "mp3") {
     args.push(
@@ -80,7 +93,7 @@ function handleDownload(req, res, body) {
     return sendJson(res, 500, { error: `yt-dlp not found at ${YTDLP_PATH}` });
   }
 
-  const args = getYtDlpArgs(data.url, data.format, data.outputPath);
+  const args = getYtDlpArgs(data.url, data.format, data.outputPath, data.filename);
   const child = spawn(YTDLP_PATH, args, {
     shell: false,
     windowsHide: true,

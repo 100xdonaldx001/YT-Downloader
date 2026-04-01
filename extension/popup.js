@@ -1,6 +1,7 @@
 const statusEl = document.getElementById("status");
 const button = document.getElementById("downloadBtn");
 const formatEl = document.getElementById("format");
+const filenameEl = document.getElementById("filename");
 const outputPathEl = document.getElementById("outputPath");
 
 function setStatus(message, isError = false) {
@@ -22,6 +23,7 @@ button.addEventListener("click", async () => {
 
     const url = await getCurrentTabUrl();
     const format = formatEl.value;
+    const filename = filenameEl.value.trim();
     const outputPath = outputPathEl.value.trim();
 
     setStatus("Sending job to local helper...");
@@ -34,6 +36,7 @@ button.addEventListener("click", async () => {
       body: JSON.stringify({
         url,
         format,
+        filename,
         outputPath
       })
     });
