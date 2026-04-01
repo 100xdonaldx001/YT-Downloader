@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>yt-dlp Sender</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1>yt-dlp</h1>
+
+    <label class="label" for="format">Format</label>
+    <select id="format">
+      <option value="mp4">Video (mp4)</option>
+      <option value="mp3">Audio (mp3)</option>
+      <option value="best">Best available</option>
+    </select>
+
+    <label class="label" for="outputPath">Output folder</label>
+    <input id="outputPath" type="text" placeholder="C:\\Downloads\\yt-dlp" />
+
+    <button id="downloadBtn">Download current tab</button>
+    <p id="status"></p>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>
