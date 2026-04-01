@@ -5,8 +5,6 @@ const formatEl = document.getElementById("format");
 const filenameEl = document.getElementById("filename");
 const outputPathEl = document.getElementById("outputPath");
 
-let progressTimer = null;
-
 function setStatus(message, isError = false) {
   statusEl.textContent = message;
   statusEl.style.color = isError ? "#b00020" : "#222";
@@ -18,13 +16,27 @@ function setProgress(value) {
   progressEl.textContent = `${percent}%`;
 }
 
-function stopProgressPolling() {
-  if (!progressTimer) {
+function setUIFromJob(job) {
+  if (!job) {
     return;
   }
 
-  clearInterval(progressTimer);
-  progressTimer = null;
+  setProgress(job.progress);
+  setStatus(job.error ? `${job.message}\n${job.error}` : (job.message || `Status: ${job.status}`), job.status === "failed");
+  button.disabled = job.status !== "completed" && job.status !== "failed";
+}
+
+function sendRuntimeMessage(message) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, response => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+
+      resolve(response);
+    });
+  });
 }
 
 async function getCurrentTabUrl() {
@@ -35,75 +47,59 @@ async function getCurrentTabUrl() {
   return tabs[0].url;
 }
 
-async function pollProgress(jobId) {
-  const response = await fetch(`http://127.0.0.1:3030/progress?jobId=${encodeURIComponent(jobId)}`);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to read progress from helper.");
+chrome.runtime.onMessage.addListener(message => {
+  if (!message || message.type !== "job-update") {
+    return;
   }
 
-  const { status, progress, message, error } = data.job;
-  setProgress(progress);
-  setStatus(message || `Status: ${status}`, status === "failed");
+  setUIFromJob(message.job);
+});
 
-  if (status === "completed" || status === "failed") {
-    stopProgressPolling();
+async function loadCurrentState() {
+  const state = await sendRuntimeMessage({ type: "get-state" });
+  if (!state?.ok) {
+    return;
+  }
+
+  if (state.activeJob) {
+    setUIFromJob(state.activeJob);
+  } else {
     button.disabled = false;
-    if (error) {
-      setStatus(`${message}\n${error}`, true);
-    }
+    setStatus("Ready.");
+    setProgress(0);
   }
 }
 
 button.addEventListener("click", async () => {
-  stopProgressPolling();
-
   try {
     button.disabled = true;
     setProgress(0);
     setStatus("Reading current tab...");
 
     const url = await getCurrentTabUrl();
-    const format = formatEl.value;
-    const filename = filenameEl.value.trim();
-    const outputPath = outputPathEl.value.trim();
 
-    setStatus("Sending job to local helper...");
-
-    const response = await fetch("http://127.0.0.1:3030/download", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+    const response = await sendRuntimeMessage({
+      type: "start-download",
+      payload: {
         url,
-        format,
-        filename,
-        outputPath
-      })
+        format: formatEl.value,
+        filename: filenameEl.value.trim(),
+        outputPath: outputPathEl.value.trim()
+      }
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Unknown error from helper.");
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unknown error from helper.");
     }
 
-    setStatus(`Started.\n${data.message}`);
-
-    progressTimer = setInterval(() => {
-      pollProgress(data.jobId).catch(error => {
-        stopProgressPolling();
-        button.disabled = false;
-        setStatus(error.message || String(error), true);
-      });
-    }, 1000);
-
-    await pollProgress(data.jobId);
+    setStatus("Started download job...");
   } catch (error) {
-    stopProgressPolling();
     button.disabled = false;
-    setStatus(error.message || String(error), true);
+    setStatus(error?.message || String(error), true);
   }
+});
+
+loadCurrentState().catch(error => {
+  setStatus(error?.message || String(error), true);
+  button.disabled = false;
 });

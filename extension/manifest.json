@@ -1,14 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Universal Media Downloader",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Send the current tab URL to a local yt-dlp helper.",
   "action": {
     "default_popup": "popup.html"
   },
-  "permissions": ["tabs"],
+  "permissions": [
+    "tabs"
+  ],
   "host_permissions": [
     "http://127.0.0.1:3030/*",
     "http://localhost:3030/*"
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }
