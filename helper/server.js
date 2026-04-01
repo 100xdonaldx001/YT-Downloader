@@ -61,6 +61,10 @@ function getYtDlpArgs(url, format, outputPath, filename) {
     "--remote-components", "ejs:github"
   ];
 
+  if (shouldUseBrowserCookies(url)) {
+    args.push("--cookies-from-browser", "chrome");
+  }
+
   if (format === "mp3") {
     args.push(
       "-x",
@@ -79,6 +83,20 @@ function getYtDlpArgs(url, format, outputPath, filename) {
 
   args.push(url);
   return args;
+}
+
+function shouldUseBrowserCookies(rawUrl) {
+  let hostname = "";
+  try {
+    hostname = new URL(rawUrl).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+
+  return (
+    hostname === "medal.tv" ||
+    hostname.endsWith(".medal.tv")
+  );
 }
 
 function createJob(url) {
