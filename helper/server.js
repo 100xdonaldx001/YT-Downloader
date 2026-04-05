@@ -7,7 +7,7 @@ const { spawn } = require("child_process");
 const PORT = 3030;
 const BASE_DIR = "C:\\Custom Chrome Extensions\\YT-Downloader";
 const YTDLP_PATH = path.join(BASE_DIR, "yt-dlp.exe");
-const DEFAULT_OUTPUT = "F:\\Videos\\New Reports";
+const DEFAULT_OUTPUT = path.join(process.env.USERPROFILE || "C:\\Users\\Public", "Videos");
 const JOB_TTL_MS = 1000 * 60 * 60 * 2; // 2 hours
 
 const jobs = new Map();
@@ -258,6 +258,67 @@ function handleProgress(req, res) {
   });
 }
 
+
+function pickFolderFromExplorer() {
+  return new Promise((resolve, reject) => {
+    if (process.platform !== "win32") {
+      reject(new Error("Folder picker is only supported on Windows."));
+      return;
+    }
+
+    const script = [
+      "Add-Type -AssemblyName System.Windows.Forms",
+      "$dialog = New-Object System.Windows.Forms.FolderBrowserDialog",
+      '$dialog.Description = "Choose a default download folder"',
+      "$dialog.ShowNewFolderButton = $true",
+      "$result = $dialog.ShowDialog()",
+      "if ($result -eq [System.Windows.Forms.DialogResult]::OK) {",
+      "  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+      "  Write-Output $dialog.SelectedPath",
+      "}"
+    ].join("; ");
+
+    const picker = spawn("powershell.exe", ["-NoProfile", "-STA", "-Command", script], {
+      shell: false,
+      windowsHide: true
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    picker.stdout.on("data", chunk => {
+      stdout += chunk.toString();
+    });
+
+    picker.stderr.on("data", chunk => {
+      stderr += chunk.toString();
+    });
+
+    picker.on("error", err => {
+      reject(new Error(`Could not open folder picker: ${err.message}`));
+    });
+
+    picker.on("close", code => {
+      if (code !== 0) {
+        reject(new Error(stderr.trim() || `Folder picker exited with code ${code}.`));
+        return;
+      }
+
+      resolve(stdout.trim());
+    });
+  });
+}
+
+function handleFolderPicker(_req, res) {
+  pickFolderFromExplorer()
+    .then(selectedPath => {
+      sendJson(res, 200, { ok: true, path: selectedPath || "" });
+    })
+    .catch(error => {
+      sendJson(res, 500, { ok: false, error: error.message || String(error) });
+    });
+}
+
 const server = http.createServer((req, res) => {
   cleanupOldJobs();
 
@@ -276,6 +337,10 @@ const server = http.createServer((req, res) => {
 
   if (req.method === "GET" && req.url.startsWith("/progress")) {
     return handleProgress(req, res);
+  }
+
+  if (req.method === "GET" && req.url === "/pick-folder") {
+    return handleFolderPicker(req, res);
   }
 
   if (req.method === "POST" && req.url === "/download") {
