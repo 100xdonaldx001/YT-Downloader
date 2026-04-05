@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const { spawn } = require("child_process");
 
 const PORT = 3030;
-const BASE_DIR = "C:\\Custom Chrome Extensions\\YT-Downloader";
+const BASE_DIR = path.resolve(__dirname, "..");
 const YTDLP_PATH = path.join(BASE_DIR, "yt-dlp.exe");
 const DEFAULT_OUTPUT = path.join(process.env.USERPROFILE || "C:\\Users\\Public", "Videos");
 const JOB_TTL_MS = 1000 * 60 * 60 * 2; // 2 hours
