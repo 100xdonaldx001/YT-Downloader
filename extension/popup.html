@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>yt-dlp Sender</title>
+  <title>Universal Media Downloader</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="wrap">
     <header class="hero">
-      <h1>yt-dlp downloader</h1>
-      <p class="subtitle">Quickly send the current tab to your local helper.</p>
+      <h1>Universal Media Downloader</h1>
+      <p class="subtitle">Quickly send the current tab (YouTube, Medal.tv, and more) to your local helper.</p>
     </header>
 
-    <section class="panel">
+    <div class="tabs" role="tablist" aria-label="Downloader sections">
+      <button id="downloadTabBtn" class="tab-btn active" role="tab" aria-selected="true" aria-controls="downloadPanel">Download</button>
+      <button id="settingsTabBtn" class="tab-btn" role="tab" aria-selected="false" aria-controls="settingsPanel">Settings</button>
+    </div>
+
+    <section id="downloadPanel" class="panel" role="tabpanel" aria-labelledby="downloadTabBtn">
       <label class="label" for="format">Format</label>
       <select id="format">
         <option value="mp4">Video (mp4)</option>
@@ -22,15 +27,38 @@
       </select>
 
       <label class="label" for="filename">Download filename</label>
-      <input id="filename" type="text" placeholder="Leave empty to use video title" />
+      <input id="filename" type="text" placeholder="Leave empty to use page media title" />
       <p class="hint">Optional. Extension is picked automatically from the selected format.</p>
 
       <label class="label" for="outputPath">Output folder</label>
-      <input id="outputPath" type="text" placeholder="F:\\Videos\\New Reports" />
+      <div class="folder-row">
+        <input id="outputPath" type="text" placeholder="%USERPROFILE%\\Videos" />
+        <button id="pickFolderBtn" class="secondary" type="button">Browse...</button>
+      </div>
 
       <button id="downloadBtn">Download current tab</button>
       <progress id="progress" max="100" value="0">0%</progress>
     </section>
+
+    <section id="settingsPanel" class="panel hidden" role="tabpanel" aria-labelledby="settingsTabBtn">
+      <label class="label" for="defaultFormat">Default format</label>
+      <select id="defaultFormat">
+        <option value="mp4">Video (mp4)</option>
+        <option value="mp3">Audio (mp3)</option>
+        <option value="best">Best available</option>
+      </select>
+
+      <label class="label" for="defaultOutputPath">Default output folder</label>
+      <div class="folder-row">
+        <input id="defaultOutputPath" type="text" placeholder="%USERPROFILE%\\Videos" />
+        <button id="defaultPickFolderBtn" class="secondary" type="button">Browse...</button>
+      </div>
+      <p class="hint">These defaults are prefilled each time you open this popup.</p>
+
+      <button id="saveSettingsBtn">Save defaults</button>
+      <p id="settingsStatus" class="hint settings-status"></p>
+    </section>
+
     <p id="status"></p>
   </main>
 
