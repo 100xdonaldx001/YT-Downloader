@@ -74,6 +74,12 @@ function ensurePolling() {
   }, POLL_INTERVAL_MS);
 }
 
+
+async function pickFolder() {
+  const data = await fetchJson(`${HELPER_BASE}/pick-folder`);
+  return { ok: true, path: data.path || "" };
+}
+
 async function startDownload(payload) {
   const data = await fetchJson(`${HELPER_BASE}/download`, {
     method: "POST",
@@ -115,5 +121,15 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       activeJobId,
       activeJob
     });
+    return;
+  }
+
+  if (message.type === "pick-folder") {
+    pickFolder()
+      .then(result => sendResponse(result))
+      .catch(error => {
+        sendResponse({ ok: false, error: error?.message || String(error) });
+      });
+    return true;
   }
 });
