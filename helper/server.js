@@ -63,6 +63,7 @@ function getYtDlpArgs(url, format, outputPath, filename) {
 
   if (shouldUseBrowserCookies(url)) {
     args.push("--cookies-from-browser", "chrome");
+    //args.push("--cookies", "");
   }
 
   if (format === "mp3") {
